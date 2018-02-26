@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bootstrap": "^4.0.0",
+    "node-sass": "^4.7.2",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.1.1",
+    "react-select": "^1.2.1",
+    "reactstrap": "^5.0.0-beta"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "css:build": "node-sass -r src/styles/index.scss src/styles/css/index.css",
+    "build": "yarn run css:build && react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
