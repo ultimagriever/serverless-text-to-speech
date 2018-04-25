@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: Serverless Text-to-Speech Stack
+
+Parameters:
+  DynamoDBEndpoint:
+    Type: String
+    Description: DynamoDB Endpoint - set this if running locally
+    Default: https://dynamodb.us-east-1.amazonaws.com
+
+Resources:
+  GetPosts:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: ./functions/getPosts
+      Runtime: nodejs8.10
+      Role: !GetAtt ExecutionRole.Arn
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref Posts
+          DYNAMODB_ENDPOINT: !Ref DynamoDBEndpoint
+      Events:
+        GetAllPosts:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /posts
+        GetPostById:
+          Type: Api
+          Properties:
+            Method: get
+            Path: /posts/{id}
+
+  NewPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: ./functions/newPost
+      Runtime: nodejs8.10
+      Role: !GetAtt ExecutionRole.Arn
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref Posts
+          DYNAMODB_ENDPOINT: !Ref DynamoDBEndpoint
+          SNS_TOPIC: !Ref SnsTopic
+      Events:
+        CreatePost:
+          Type: Api
+          Properties:
+            Method: post
+            Path: /posts
+
+  ConvertToAudio:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: ./functions/convertToAudio
+      Runtime: nodejs8.10
+      Role: !GetAtt ExecutionRole.Arn
+      Timeout: 300
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref Posts
+          DYNAMODB_ENDPOINT: !Ref DynamoDBEndpoint
+          BUCKET_NAME: !Ref AudioBucket
+      Events:
+        Trigger:
+          Type: SNS
+          Properties:
+            Topic: !Ref SnsTopic
+
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: TTSPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - polly:SynthesizeSpeech
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - sns:Publish
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:GetBucketLocation
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  SnsTopic:
+    Type: AWS::SNS::Topic
+
+  AudioBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        ErrorDocument: index.html
+        IndexDocument: index.html
+
+  Posts:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: Posts
+      PrimaryKey:
+        Name: id
+        Type: String
+
+
+Outputs:
+  ApiEndpoint:
+    Value: !Sub https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+    Description: API Gateway base endpoint
+  WebsiteUrl:
+    Value: !GetAtt WebsiteBucket.WebsiteURL
