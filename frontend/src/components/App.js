@@ -24,10 +24,10 @@ export default class App extends Component {
     return (
       <Container>
         <Row className="mb-2">
-          <Col md="12">
+          <Col xs={12}>
             <h1>Serverless Text-to-Speech App</h1>
           </Col>
-          <Col md="12">
+          <Col xs={12}>
             <p>
               This proof-of-concept is a simple app designed to take a block of text and transform it into lifelike speech.
               Currently, the languages supported are Danish, Dutch, English (Australian, British, Indian, American, Welsh),

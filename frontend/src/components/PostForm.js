@@ -20,7 +20,7 @@ export default class PostForm extends Component {
     return (
       <Form>
         <Row className="mb-3">
-          <Col md="12">
+          <Col xs={12}>
             <FormGroup>
               <Label for="voice">
                 Voice
@@ -34,7 +34,7 @@ export default class PostForm extends Component {
               />
             </FormGroup>
           </Col>
-          <Col md="12">
+          <Col xs={12}>
             <FormGroup>
               <Label for="text">
                 Text
@@ -47,8 +47,8 @@ export default class PostForm extends Component {
               />
             </FormGroup>
           </Col>
-          <Col md={{ size: '3', offset: '9' }} sm={{ size: '6', offset: '6' }}>
-            <Button type="button" onClick={() => this.props.onSubmit(this.state)} color="primary">
+          <Col md={{ size: '3', offset: '9' }} xs={12}>
+            <Button type="button" onClick={() => this.props.onSubmit(this.state)} color="primary" block>
               Add new post
             </Button>
           </Col>
